@@ -10,9 +10,6 @@
  */
 
 
-if ( !class_exists('ClockworkHTTP')) {
-    require_once('class-ClockworkHTTP.php');
-}
 if ( !class_exists('ClockworkException')) {
     require_once('class-ClockworkException.php');
 }
@@ -25,10 +22,20 @@ if ( !class_exists('ClockworkException')) {
  */
 class Clockwork {
 
+    /*
+     * Version of this class
+     */
+    const VERSION           = 0.1;
+
     /**
      * All Clockwork API calls start with BASE_URL
      */
     const API_BASE_URL      = 'api.clockworksms.com/xml/';
+
+    /**
+     * string to append to API_BASE_URL to check authentication
+     */
+    const API_AUTH_METHOD   = 'authenticate';
 
     /**
      * string to append to API_BASE_URL for sending SMS
@@ -109,20 +116,6 @@ class Clockwork {
     public $invalid_char_action;
 
     /**
-     * Class to use when making HTTP requests
-     * 
-     * By default this will use ClockworkHTTP which wraps cURL and PHP Streams
-     * to find a working implementation. 
-     * 
-     * If you're using a framework CMS that already contains HTTP functionality 
-     * extend or replace the ClockworkHTTP class and pass your class name 
-     * as the http_class (string) option in the options array.
-     * 
-     * @var string
-     */
-    private $http_class;
-
-    /**
      * Create a new instance of the Clockwork wrapper
      *
      * @param   string  key         Your Clockwork API Key
@@ -143,7 +136,6 @@ class Clockwork {
         $this->truncate             = (array_key_exists('truncate', $options)) ? $options['truncate'] : null;
         $this->invalid_char_action  = (array_key_exists('invalid_char_action', $options)) ? $options['invalid_char_action'] : null;
         $this->log                  = (array_key_exists('log', $options)) ? $options['log'] : false;
-        $this->http_class           = (array_key_exists('http_class', $options)) ? $options['http_class'] : 'ClockworkHTTP';
     }
 
     /**
@@ -294,7 +286,7 @@ class Clockwork {
     /**
      * Check how many SMS credits you have available
      *
-     * @return  integer|float   SMS credits remaining
+     * @return  integer   SMS credits remaining
      */
     public function checkCredit() {
         // Create XML doc for request
@@ -339,6 +331,53 @@ class Clockwork {
     }
 
     /**
+     * Check whether the API Key is valid
+     *
+     * @return  bool    True indicates a valid key
+     */
+    public function checkKey() {
+        // Create XML doc for request
+        $req_doc = new DOMDocument('1.0', 'UTF-8');
+        $root = $req_doc->createElement('Authenticate');
+        $req_doc->appendChild($root);
+        $root->appendChild($req_doc->createElement('Key', $this->key));
+        $req_xml = $req_doc->saveXML();
+
+        // POST XML to Clockwork
+        $resp_xml = $this->postToClockwork(self::API_AUTH_METHOD, $req_xml);
+
+        // Create XML doc for response
+        $resp_doc = new DOMDocument();
+        $resp_doc->loadXML($resp_xml);
+        
+        // Parse the response to see if authenticated
+        $cust_id;
+        $err_no = null;
+        $err_desc = null;
+
+        foreach ($resp_doc->documentElement->childNodes AS $doc_child) {
+            switch ($doc_child->nodeName) {
+                case "CustID":
+                    $cust_id = $doc_child->nodeValue;
+                    break;
+                case "ErrNo":
+                    $err_no = $doc_child->nodeValue;
+                    break;
+                case "ErrDesc":
+                    $err_desc = $doc_child->nodeValue;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (isset($err_no)) {
+            throw new ClockworkException($err_desc, $err_no);
+        }
+        return isset($cust_id);   
+    }
+
+    /**
      * Make an HTTP POST to Clockwork
      *
      * @param   string   method Clockwork method to call (sms/credit)
@@ -346,26 +385,18 @@ class Clockwork {
      *
      * @return  string          Response from Clockwork
      */
-    private function postToClockwork($method, $data) {
+    protected function postToClockwork($method, $data) {
 
         if ($this->log) {
             $this->logXML("API $method Request XML", $data);
         }
 
-        $http_class = $this->http_class;
-        $http = new $http_class();
-        
-        $ssl = isset($this->ssl) ? $this->ssl : $http->sslSupport();
+        $ssl = isset($this->ssl) ? $this->ssl : $this->sslSupport();
 
         $url = $ssl ? 'https://' : 'http://';
         $url.= self::API_BASE_URL . $method;
 
-        print "URL: $url\n";
-
-        $http->proxy_host = isset($this->proxy_host) ? $this->proxy_host : null;
-        $http->proxy_port = isset($this->proxy_port) ? $this->proxy_port : null;
-
-        $response = $http->Post($url, 'text/xml', $data);
+        $response = $this->xmlPost($url, $data);
 
         if ($this->log) {
             $this->logXML("API $method Response XML", $response);
@@ -373,6 +404,96 @@ class Clockwork {
 
         return $response;
     }
+
+    /**
+     * Make an HTTP POST
+     *
+     * cURL will be used if available, otherwise tries the PHP stream functions
+     *
+     * @param   string url      URL to send to
+     * @param   string data     Data to POST
+     * @return  string          Response returned by server
+     */
+    protected function xmlPost($url, $data) {
+        if(extension_loaded('curl')) {
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Content-Type: text/xml"));
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Clockwork PHP Wrapper/1.0' . self::VERSION);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            if (isset($this->proxy_host) && isset($this->proxy_port)) {
+                curl_setopt($ch, CURLOPT_PROXY, $this->proxy_host);
+                curl_setopt($ch, CURLOPT_PROXYPORT, $this->proxy_port);
+            }
+
+            $response = curl_exec($ch);
+            $info = curl_getinfo($ch);
+
+            if ($response === false || $info['http_code'] != 200) {
+                throw new Exception('HTTP Error calling Clockwork API - HTTP Status: ' . $info['http_code'] . ' - cURL Erorr: ' . curl_error($ch));
+            } elseif (curl_errno($ch) > 0) {
+                throw new Exception('HTTP Error calling Clockwork API - cURL Error: ' . curl_error($ch));
+            }
+
+            curl_close($ch);
+
+            return $response;
+        } elseif (function_exists('stream_get_contents')) {
+            // Enable error Track Errors
+            $track = ini_get('track_errors');
+            ini_set('track_errors',true);
+
+            $params = array('http' => array(
+                'method'  => 'POST',
+                'header'  => "Content-Type: text/xml\r\nUser-Agent: mediaburst PHP Wrapper/" . self::VERSION . "\r\n",
+                'content' => $data
+            ));
+
+            if (isset($this->proxy_host) && isset($this->proxy_port)) {
+                $params['http']['proxy'] = 'tcp://'.$this->proxy_host . ':' . $this->proxy_port;
+                $params['http']['request_fulluri'] = True;
+            }
+
+            $ctx = stream_context_create($params);
+            $fp = @fopen($url, 'rb', false, $ctx);
+            if (!$fp) {
+                ini_set('track_errors',$track);
+                throw new Exception("HTTP Error calling Clockwork API - fopen Error: $php_errormsg");
+            }
+            $response = @stream_get_contents($fp);
+            if ($response === false) {
+                ini_set('track_errors',$track);
+                throw new Exception("HTTP Error calling Clockwork API - stream Error: $php_errormsg");
+            }
+            ini_set('track_errors',$track);
+            return $response;
+        } else {
+            throw new Exception("Clockwork requires PHP5 with cURL or HTTP stream support");
+        }
+    }
+
+    /**
+     * Does the server/HTTP wrapper support SSL
+     *
+     * This is a best guess effort, some servers have weird setups where even
+     * though cURL is compiled with SSL support is still fails to make
+     * any requests.
+     *
+     * @return bool     True if SSL is supported
+     */
+    private function sslSupport() {
+        $ssl = false;
+        // See if PHP is compiled with cURL
+        if (extension_loaded('curl')) {
+            $version = curl_version();
+            $ssl = ($version['features'] & CURL_VERSION_SSL) ? true : false;
+        } elseif (extension_loaded('openssl')) {
+            $ssl = true;
+        }
+        return $ssl;
+    }
+
 
     /**
      * Log some XML, tidily if possible, in the PHP error log

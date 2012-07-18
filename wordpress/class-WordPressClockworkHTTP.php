@@ -1,19 +1,19 @@
 <?php
 /**
- * WordPress Clockwork HTTP class
+ * WordPress Clockwork class
  *
- * Extends the ClockworkHTTP wrapper class to use the
+ * Extends the Clockwor wrapper class to use the
  * WordPress HTTP API for HTTP calls, attempts to work
  * round the differences in PHP versions, such as SSL
  * & curl support
  *
  * @package     Clockwork
- * @subpackage  WordPressClockworkHTTP       
+ * @subpackage  WordPressClockwork       
  * @since       1.0
  */
 
 
-class WordPressClockworkHTTP {
+class WordPressClockwork extends Clockwork {
 
     const OPTIONS_KEY = 'clockwork';
 
@@ -30,14 +30,13 @@ class WordPressClockworkHTTP {
      * Make an HTTP POST using the WordPress HTTP API.
      *
      * @param string url URL to send to
-     * @param string type MIME Type of data
      * @param string data Data to POST
      * @return string Response returned by server
      */
-    public function Post($url, $type, $data) {
+    protected function xmlPost($url, $data) {
         $args = array(
             'body'    => $data,
-            'headers' => array('Content-Type' => $type),
+            'headers' => array('Content-Type' => 'text/xml'),
             'timeout' => 10, // Seconds
         );
 
