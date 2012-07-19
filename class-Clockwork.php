@@ -10,7 +10,7 @@
  */
 
 
-if ( !class_exists('ClockworkException')) {
+if ( !class_exists('ClockworkException') ) {
     require_once('class-ClockworkException.php');
 }
 
@@ -25,7 +25,7 @@ class Clockwork {
     /*
      * Version of this class
      */
-    const VERSION           = 0.1;
+    const VERSION           = 1.0.0;
 
     /**
      * All Clockwork API calls start with BASE_URL
@@ -145,7 +145,7 @@ class Clockwork {
      */
     public function send(array $sms) {
         if (!is_array($sms)) {
-            throw new ClockworkException("sms parameter must be an array");
+             throw new ClockworkException("sms parameter must be an array");
         }
         $single_message = $this->is_assoc($sms);
 
@@ -494,7 +494,6 @@ class Clockwork {
         return $ssl;
     }
 
-
     /**
      * Log some XML, tidily if possible, in the PHP error log
      *
@@ -524,8 +523,7 @@ class Clockwork {
     /*
      * Check if an array is associative
      *
-     * @param   array   array   Array to check
-     *
+     * @param   array $array Array to check
      * @return  bool    
      */
     function is_assoc($array) {

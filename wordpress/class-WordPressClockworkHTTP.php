@@ -12,7 +12,6 @@
  * @since       1.0
  */
 
-
 class WordPressClockwork extends Clockwork {
 
     const OPTIONS_KEY = 'clockwork';
@@ -60,7 +59,6 @@ class WordPressClockwork extends Clockwork {
      * don't need to do the check again
      */
     private function sslVerify() {
-
         $opt = get_option(self::OPTION_KEY);
         if(!$opt) {
             $opt = array();
