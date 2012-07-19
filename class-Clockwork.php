@@ -24,7 +24,7 @@ class Clockwork {
     /*
      * Version of this class
      */
-    const VERSION           = 1.0.0;
+    const VERSION           = '1.0.0';
 
     /**
      * All Clockwork API calls start with BASE_URL
@@ -258,7 +258,12 @@ class Clockwork {
                                 break;
                         }
                     }
-                    $resp['success'] = !array_key_exists('error_code', $sms);
+                    if( array_key_exists('error_code', $resp ) ) 
+                    {
+                      $resp['success'] = 0;
+                    } else {
+                      $resp['success'] = 1;
+                    }
                     $resp['sms'] = $sms[$wrapper_id];
                     array_push($response, $resp);
                     break;
