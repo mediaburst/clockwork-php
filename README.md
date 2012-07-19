@@ -22,43 +22,108 @@ Require the Clockwork library:
 ### Sending a message
 
     $clockwork = new Clockwork( $API_KEY );
-    $message = array( 'to' => '07525071237', 'message' => 'This is a test!' );
+    $message = array( 'to' => '441234567891', 'message' => 'This is a test!' );
     $result = $clockwork->send( $message );
 
 ### Sending multiple messages
 
 We recommend you use batch sizes of 500 messages or fewer. By limiting the batch size it prevents any timeouts when sending.
 
+    $clockwork = new Clockwork( $API_KEY );
+    $messages = array( 
+      array( 'to' => '441234567891', 'message' => 'This is a test!' ),
+      array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
+    );
+    $results = $clockwork->send( $messages );
 
 
-### Handling the resposne
+### Handling the response
 
-The responses come back as arrays, these contain the unique Clockwork message ID, whether the message worked, and the original SMS so you can update your database.
+The responses come back as arrays, these contain the unique Clockwork message ID, whether the message worked (`success`), and the original SMS so you can update your database.
 
+    Array
+    (
+        [id] => VE_164732148
+        [success] => 1
+        [sms] => Array
+            (
+                [to] => 441234567891
+                [message] => This is a test!
+            )
 
+    )
 
 If you send multiple SMS messages in a single send, you'll get back an array of results, one per SMS.
 
 The result will look something like this:
 
+    Array
+    (
+        [0] => Array
+            (
+                [id] => VI_143228951
+                [success] => 1
+                [sms] => Array
+                    (
+                        [to] => 441234567891
+                        [message] => This is a test!
+                    )
 
+            )
+
+        [1] => Array
+            (
+                [id] => VI_143228952
+                [success] => 1
+                [sms] => Array
+                    (
+                        [to] => 441234567892
+                        [message] => This is a test 2!
+                    )
+
+            )
+
+    )
 
 If a message fails, the reason for failure will be set in `error_code` and `error_message`.  
 
 For example, if you send to invalid phone number "abc":
 
+    Array
+    (
+        [error_code] => 10
+        [error_message] => Invalid 'To' Parameter
+        [success] => 0
+        [sms] => Array
+            (
+                [to] => abc
+                [message] => This is a test!
+            )
 
+    )
 
 ### Checking your credit
 
-Check how many SMS credits you currently have available.
+Check how many SMS credits you currently have available:
 
-
+    $clockwork = new Clockwork( $API_KEY );
+    print $clockwork->checkCredit();
     
 ### Handling Errors
 
-The Clockwork wrapper will throw exceptions if the entire call failed.
+The Clockwork wrapper will throw a `ClockworkException` if the entire call failed.
 
+    try 
+    {
+      $clockwork = new Clockwork( 'invalid_key' );
+      $message = array( 'to' => 'abc', 'message' => 'This is a test!' );
+      $result = $clockwork->send( $message );
+    }
+    catch( ClockworkException $e )
+    {
+      print $e->getMessage();
+      // Invalid API Key
+    }
 
 ### Advanced Usage
 
@@ -66,25 +131,24 @@ This class has a few additional features that some users may find useful, if the
 
 ### Optional Parameters
 
-*   From [string]
+*   $from [string]
 
     The from address displayed on a phone when they receive a message
 
-*   Long [nullable boolean]  
+*   $long [boolean]  
 
     Enable long SMS. A standard text can contain 160 characters, a long SMS supports up to 459.
 
-*   Truncate [nullable boolean]  
+*   $truncate [nullable boolean]  
 
     Truncate the message payload if it is too long, if this is set to false, the message will fail if it is too long.
 
-*	InvalidCharacterAction [enum]
+*	$invalid_char_action [string]
 
 	What to do if the message contains an invalid character. Possible values are
-	* AccountDefault - Use the setting from your Clockwork account
-	* None			 - Fail the message
-	* Remove		 - Remove the invalid characters then send
-	* Replace		 - Replace some common invalid characters such as replacing curved quotes with straight quotes
+	* error			 - Fail the message
+	* remove		 - Remove the invalid characters then send
+	* replace		 - Replace some common invalid characters such as replacing curved quotes with straight quotes
 
 ### Setting Options
 
@@ -92,21 +156,28 @@ This class has a few additional features that some users may find useful, if the
 
 Options set on the API object will apply to all SMS messages unless specifically overridden.
 
-In this example both messages will be sent from Clockwork
+In this example both messages will be sent from Clockwork:
 
-
+    $options = array( 'from' => 'Clockwork' );
+    $clockwork = new Clockwork( $API_KEY, $options );
+    $messages = array( 
+      array( 'to' => '441234567891', 'message' => 'This is a test!' ),
+      array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
+    );
+    $results = $clockwork->send( $messages );
 
 #### Per-message Options
 
-Set option values individually on each message
+Set option values individually on each message.
 
-In this example, one message will be from Clockwork and the other from 84433
+In this example, one message will be from Clockwork and the other from 84433:
 
-	Clockwork.API api = new API(key);
-	List<SMS> smsList = new List<SMS>();
-	smsList.Add(new SMS { To = "441234567891", Message = "Hello Bill", From="Clockwork" });
-	smsList.Add(new SMS { To = "441234567892", Message = "Hello Ben", From="84433" });
-	List<SMSResult> results = api.Send(smsList);
+    $clockwork = new Clockwork( $API_KEY, $options );
+    $messages = array( 
+      array( 'to' => '441234567891', 'message' => 'This is a test!', 'from' => 'Clockwork' ),
+      array( 'to' => '441234567892', 'message' => 'This is a test 2!', 'from' => '84433' )
+    );
+    $results = $clockwork->send( $messages );
 
 # License
 
