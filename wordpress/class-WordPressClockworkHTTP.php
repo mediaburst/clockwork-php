@@ -2,10 +2,10 @@
 /**
 * WordPress Clockwork class
 *
-* Extends the Clockwor wrapper class to use the
+* Extends the Clockwork wrapper class to use the
 * WordPress HTTP API for HTTP calls, attempts to work
 * round the differences in PHP versions, such as SSL
-* & curl support
+* and curl support
 *
 * @package     Clockwork
 * @subpackage  WordPressClockwork       
@@ -14,27 +14,30 @@
 
 class WordPressClockwork extends Clockwork {
 
-  const OPTIONS_KEY = '';
+  /**
+   * Options key for Clockwork plugins
+   */
+  const OPTIONS_KEY = 'clockwork_options';
 
   /**
-   * string to append to API_BASE_URL for getting a new key
+   * String to append to API_BASE_URL for getting a new key
    */
   const API_GET_KEY_METHOD = 'get_key';
-  
+
   /** 
    * Legacy username
    * 
    * @var string
    */
   private $username;
-  
+
   /** 
    * Legacy password
    * 
    * @var string
    */
   public $password;
-  
+
   /**
    * Create a new instance of the Clockwork wrapper
    *
@@ -45,7 +48,7 @@ class WordPressClockwork extends Clockwork {
    * @param   array   options     Optional parameters for sending SMS
    * @author James Inman
    */
-  public function __construct( $arg1, $arg2 ) {
+  public function __construct( $arg1, $arg2 = array() ) {
     if( !isset( $arg2 ) || is_array( $arg2 ) ) {
       parent::__construct( $arg1, $arg2 );
     } else {
@@ -53,7 +56,7 @@ class WordPressClockwork extends Clockwork {
       $this->password = $arg2;
     }
   }
-  
+
   public function createAPIKey( $name = 'WordPress API Key' ) {
     // Create XML doc for request
     $req_doc = new DOMDocument( '1.0', 'UTF-8' );
@@ -75,7 +78,7 @@ class WordPressClockwork extends Clockwork {
     $key = null;
     $err_no = null;
     $err_desc = null;
-          
+
     foreach( $resp_doc->documentElement->childNodes as $doc_child ) {
       switch( $doc_child->nodeName ) {
         case "Key":
@@ -91,14 +94,15 @@ class WordPressClockwork extends Clockwork {
           break;
       }
     }
-    
+
     if( isset( $err_no ) ) {
       throw new ClockworkException( $err_desc, $err_no );
     }
-    
+
+    $this->key = $key;
     return $key;
   }
-  
+
   /**
   * Check if the WordPress HTTP API can support SSL
   *
@@ -142,11 +146,11 @@ class WordPressClockwork extends Clockwork {
   * don't need to do the check again
   */
   private function sslVerify($url) {
-    $opt = get_option( self::OPTIONS_KEY);
-    if( ! $opt ) {
+    $opt = get_option( self::OPTIONS_KEY );
+    if( !$opt ) {
       $opt = array();
     }
-    if( ! array_key_exists( 'sslverify', $opt ) ) {
+    if( !array_key_exists( 'sslverify', $opt ) ) {
         $args = array(
         'timeout' => 10, // Seconds
       );
