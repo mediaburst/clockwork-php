@@ -104,10 +104,19 @@ For example, if you send to invalid phone number "abc":
 
 ### Checking your credit
 
-Check how many SMS credits you currently have available:
+Check your available SMS balance:
 
     $clockwork = new Clockwork( $API_KEY );
-    print $clockwork->checkCredit();
+    $clockwork->checkBalance();
+    
+This will return:
+
+    Array 
+    (
+        [symbol] => £
+        [balance] => 351.91
+        [code] => GBP
+    )
     
 ### Handling Errors
 
@@ -189,9 +198,10 @@ A copy of this license can be found in License.txt.
 
 If you have any feedback on this wrapper drop us an email to hello@clockworksms.com.
 
-The project is hosted on GitHub at https://github.com/mediaburst/clockwork-php.
+The project is hosted on GitHub at [https://github.com/mediaburst/clockwork-php][3].
 If you would like to contribute a bug fix or improvement please fork the project 
 and submit a pull request.
 
 [1]: https://nuget.org/packages/Clockwork/
 [2]: http://www.clockworksms.com/
+[3]: https://github.com/mediaburst/clockwork-php

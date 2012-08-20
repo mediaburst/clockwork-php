@@ -5,7 +5,7 @@
 * Extends the Clockwork wrapper class to use the
 * WordPress HTTP API for HTTP calls, attempts to work
 * round the differences in PHP versions, such as SSL
-* and curl support
+* and curl support.
 *
 * @package     Clockwork
 * @subpackage  WordPressClockwork       
@@ -23,21 +23,21 @@ class WordPressClockwork extends Clockwork {
    * String to append to API_BASE_URL for getting a new key
    */
   const API_GET_KEY_METHOD = 'get_key';
-
+  
   /** 
    * Legacy username
    * 
    * @var string
    */
   private $username;
-
+  
   /** 
    * Legacy password
    * 
    * @var string
    */
   public $password;
-
+  
   /**
    * Create a new instance of the Clockwork wrapper
    *
@@ -56,7 +56,7 @@ class WordPressClockwork extends Clockwork {
       $this->password = $arg2;
     }
   }
-
+  
   public function createAPIKey( $name = 'WordPress API Key' ) {
     // Create XML doc for request
     $req_doc = new DOMDocument( '1.0', 'UTF-8' );
@@ -78,7 +78,7 @@ class WordPressClockwork extends Clockwork {
     $key = null;
     $err_no = null;
     $err_desc = null;
-
+          
     foreach( $resp_doc->documentElement->childNodes as $doc_child ) {
       switch( $doc_child->nodeName ) {
         case "Key":
@@ -94,15 +94,15 @@ class WordPressClockwork extends Clockwork {
           break;
       }
     }
-
+    
     if( isset( $err_no ) ) {
       throw new ClockworkException( $err_desc, $err_no );
     }
-
+    
     $this->key = $key;
     return $key;
   }
-
+  
   /**
   * Check if the WordPress HTTP API can support SSL
   *
