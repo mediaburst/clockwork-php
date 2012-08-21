@@ -24,7 +24,7 @@ class Clockwork {
   /*
   * Version of this class
   */
-  const VERSION           = '1.0.0';
+  const VERSION           = '1.1.0';
 
   /**
   * All Clockwork API calls start with BASE_URL
