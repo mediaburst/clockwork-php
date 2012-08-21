@@ -24,13 +24,12 @@ class Clockwork {
   /*
   * Version of this class
   */
-  const VERSION           = '1.0.0';
+  const VERSION           = '1.1.0';
 
   /**
   * All Clockwork API calls start with BASE_URL
   */
-  // const API_BASE_URL      = 'api.clockworksms.com/xml/';
-  const API_BASE_URL = 'sms.puffin.mediaburst.co.uk/xml/';
+  const API_BASE_URL      = 'api.clockworksms.com/xml/';
 
   /**
   * string to append to API_BASE_URL to check authentication
