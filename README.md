@@ -102,7 +102,7 @@ For example, if you send to invalid phone number "abc":
 
     )
 
-### Checking your credit
+### Checking your balance
 
 Check your available SMS balance:
 

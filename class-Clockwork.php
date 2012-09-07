@@ -23,9 +23,8 @@ class Clockwork {
 
   /*
   * Version of this class
-  * @author  Martin Steel
   */
-  const VERSION           = '1.1.0';
+  const VERSION           = '1.2.0';
 
   /**
   * All Clockwork API calls start with BASE_URL
