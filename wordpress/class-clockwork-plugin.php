@@ -35,7 +35,7 @@ abstract class Clockwork_Plugin {
   /**
    * Version of the Clockwork Wordpress wrapper
    */
-  const VERSION = '1.0.0';
+  const VERSION = '1.0.1';
 	/**
 	 * URL to signup for a new Clockwork account
 	 */
@@ -55,6 +55,13 @@ abstract class Clockwork_Plugin {
    * @author James Inman
    */
   public $plugin_callback = null;
+  
+  /**
+   * @param $plugin_dir Plugin directory name 
+   *
+   * @author James Inman
+   */
+  public $plugin_dir = null;
   
   /**
 	 * Instance of WordPressClockwork
@@ -81,6 +88,9 @@ abstract class Clockwork_Plugin {
       }
     } catch( Exception $e ) {
     }
+  
+    // Register the activation hook to install
+    register_activation_hook( __FILE__, array( $this, 'install' ) );
     
     add_action( 'admin_head', array( $this, 'setup_admin_head' ) );  
     add_action( 'admin_menu', array( $this, 'setup_admin_navigation' ) );
@@ -133,6 +143,15 @@ abstract class Clockwork_Plugin {
   }
   
   /**
+   * Called on plugin activation
+   *
+   * @return void
+   * @author James Inman
+   */
+  public function install() {
+  }
+  
+  /**
    * Tell the user to update their Clockwork options on every admin panel page if they haven't already
    *
    * @return void
@@ -141,7 +160,7 @@ abstract class Clockwork_Plugin {
   public function setup_admin_message() {
     // Don't bother showing the "You need to set your Clockwork options" message if it's that form we're viewing
     if( !isset( $this->clockwork ) && ( get_current_screen()->base != 'toplevel_page_clockwork_options' ) ) {
-      $this->show_admin_message('You need to set your <a href="/wp-admin/admin.php?page=clockwork_options">Clockwork options</a> before you can use ' . $this->plugin_name . '.');
+      $this->show_admin_message('You need to set your <a href="' . site_url() . '/wp-admin/admin.php?page=clockwork_options">Clockwork options</a> before you can use ' . $this->plugin_name . '.');
     }  
   }
   
@@ -215,8 +234,8 @@ abstract class Clockwork_Plugin {
    */
   public function setup_admin_init() {
     register_setting( 'clockwork_options', 'clockwork_options', array( $this, 'clockwork_options_validate' ) );
-    add_settings_section( 'clockwork_options', 'API Key', array( $this, 'settings_api_key_text' ), 'clockwork_options' );
-    add_settings_field( 'clockwork_api_key', 'Your API Key', array( $this, 'settings_api_key_input' ), 'clockwork_options', 'clockwork_options' );
+    add_settings_section( 'clockwork_api_keys', 'API Key', array( $this, 'settings_api_key_text' ), 'clockwork' );
+    add_settings_field( 'clockwork_api_key', 'Your API Key', array( $this, 'settings_api_key_input' ), 'clockwork', 'clockwork_api_keys' );    
   }
   
   /**
@@ -319,8 +338,7 @@ abstract class Clockwork_Plugin {
    * @author James Inman
    */
   protected function render_template( $name, $data = array() ) {
-    extract( $data );
-    include( WP_PLUGIN_DIR . '/' . rtrim( basename( dirname( dirname( __FILE__ ) ) ), '/' ) . '/templates/' . $name . '.php' );
+    include( WP_PLUGIN_DIR . '/' . $this->plugin_dir . '/templates/' . $name . '.php');
   }
 
 }

@@ -6,7 +6,7 @@
 * @copyright   Mediaburst Ltd 2012
 * @license     ISC
 * @link        http://www.clockworksms.com
-* @version     1.1
+* @version     1.3.0
 */
 
 if ( !class_exists('ClockworkException') ) {
@@ -24,7 +24,7 @@ class Clockwork {
   /*
   * Version of this class
   */
-  const VERSION           = '1.2.0';
+  const VERSION           = '1.3.0';
 
   /**
   * All Clockwork API calls start with BASE_URL
@@ -633,6 +633,8 @@ class Clockwork {
    * @param string $val Value to check
    * @return bool True if valid MSISDN
    * @author James Inman
+   * @since 1.3.0
+   * @todo Take an optional country code and check that the number starts with it
    */
   public static function is_valid_msisdn($val) {
     return preg_match( '/^[1-9][0-9]{10,14}$/', $val );

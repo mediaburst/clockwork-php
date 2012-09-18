@@ -4,10 +4,7 @@ This wrapper lets you interact with Clockwork without the hassle of having to cr
 
 ## What's Clockwork?
 
-The mediaburst SMS API is being re-branded as Clockwork. At the same time we'll be launching some exciting new features
-and these shiny new wrappers.
-
-The terms Clockwork and "mediaburst SMS API" refer to exactly the same thing.
+[Clockwork][2] is Mediaburst's SMS API.
 
 ### Prerequisites
 
@@ -192,16 +189,16 @@ In this example, one message will be from Clockwork and the other from 84433:
 
 This project is licensed under the ISC open-source license.
 
-A copy of this license can be found in License.txt.
+A copy of this license can be found in license.txt.
 
 # Contributing
 
-If you have any feedback on this wrapper drop us an email to hello@clockworksms.com.
+If you have any feedback on this wrapper drop us an email to [hello@clockworksms.com][1].
 
 The project is hosted on GitHub at [https://github.com/mediaburst/clockwork-php][3].
 If you would like to contribute a bug fix or improvement please fork the project 
 and submit a pull request.
 
-[1]: https://nuget.org/packages/Clockwork/
+[1]: mailto:hello@clockworksms.com
 [2]: http://www.clockworksms.com/
 [3]: https://github.com/mediaburst/clockwork-php
