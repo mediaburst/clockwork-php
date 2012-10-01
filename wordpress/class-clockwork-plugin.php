@@ -35,7 +35,7 @@ abstract class Clockwork_Plugin {
   /**
    * Version of the Clockwork Wordpress wrapper
    */
-  const VERSION = '1.0.1';
+  const VERSION = '1.1.0';
 	/**
 	 * URL to signup for a new Clockwork account
 	 */
@@ -235,7 +235,10 @@ abstract class Clockwork_Plugin {
   public function setup_admin_init() {
     register_setting( 'clockwork_options', 'clockwork_options', array( $this, 'clockwork_options_validate' ) );
     add_settings_section( 'clockwork_api_keys', 'API Key', array( $this, 'settings_api_key_text' ), 'clockwork' );
-    add_settings_field( 'clockwork_api_key', 'Your API Key', array( $this, 'settings_api_key_input' ), 'clockwork', 'clockwork_api_keys' );    
+    add_settings_field( 'clockwork_api_key', 'Your API Key', array( $this, 'settings_api_key_input' ), 'clockwork', 'clockwork_api_keys' );   
+    
+    add_settings_section( 'clockwork_defaults', 'Default Settings', array( $this, 'settings_default_text' ), 'clockwork' );
+    add_settings_field( 'clockwork_from', "'From' Name/Number ", array( $this, 'settings_from_input' ), 'clockwork', 'clockwork_defaults' );    
   }
   
   /**
@@ -246,6 +249,16 @@ abstract class Clockwork_Plugin {
    */
   public function settings_api_key_text() {
 		echo '<p>You need an API key to use the Clockwork plugins.</p>';
+	}
+  
+  /**
+   * Introductory text for the default part of the form
+   *
+   * @return void
+   * @author James Inman
+   */
+  public function settings_default_text() {
+		echo '<p>Default settings apply to every Clockwork plugin you have installed.</p>';
 	}
   
   /**
@@ -278,6 +291,23 @@ abstract class Clockwork_Plugin {
   }
   
   /**
+   * Input box for the from name
+   *
+   * @return void
+   * @author James Inman
+   */
+  public function settings_from_input() {
+    $options = get_option( 'clockwork_options' );
+    if( isset( $options['from'] ) ) {
+      echo "<input id='clockwork_from' name='clockwork_options[from]' size='40' type='text' value='{$options['from']}' />";
+    } else {
+      echo "<input id='clockwork_from' name='clockwork_options[from]' size='40' type='text' value='' />";
+    }
+    
+    echo "<p>You can use an alphabetic string, e.g. the name of your store, which must be 11 characters or less. These are not supported by all international networks. You can also enter any normal mobile phone number, which will allow people to reply to your text messages.</p>";
+  }
+  
+  /**
    * Validation for the API key
    *
    * @return void
@@ -293,11 +323,18 @@ abstract class Clockwork_Plugin {
         add_settings_error( 'clockwork_options', 'clockwork_options', 'Your settings were saved! You can now start using Clockwork SMS.', 'updated' );
       } else {
 	      $key = '';
-	      add_settings_error( 'clockwork_options', 'clockwork_options', 'You cannot enter a blank API key.', 'error' );
       }
     } catch( ClockworkException $ex ) {
       add_settings_error( 'clockwork_options', 'clockwork_options', 'Your API key was incorrect. Please enter it again.', 'error' );
     }
+    
+    $val['from'] = preg_replace( '/[^A-Za-z0-9]/', '', $val['from'] );
+    if( preg_match( '/[0-9]/', $val['from'] ) ) {
+      $val['from'] = substr( $val['from'], 0, 14 );
+    } else {
+      $val['from'] = substr( $val['from'], 0, 11 );
+    }
+    
     return $val;
   }
   
