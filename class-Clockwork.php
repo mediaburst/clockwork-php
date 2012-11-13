@@ -24,7 +24,7 @@ class Clockwork {
   /*
   * Version of this class
   */
-  const VERSION           = '1.3.0';
+  const VERSION           = '1.3.1';
 
   /**
   * All Clockwork API calls start with BASE_URL
@@ -637,7 +637,7 @@ class Clockwork {
    * @todo Take an optional country code and check that the number starts with it
    */
   public static function is_valid_msisdn($val) {
-    return preg_match( '/^[1-9][0-9]{10,14}$/', $val );
+    return preg_match( '/^[1-9][0-9]{9,14}$/', $val );
   }
 
 }
