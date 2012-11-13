@@ -16,3 +16,7 @@
 ### 1.3 (September 18th, 2012)
 
 * Added `is_valid_msisdn()` method. [JI]
+
+#### 1.3.1 (November 13th, 2012)
+
+* Updated `is_valid_msisdn()` method to handle 9-digit phone numbers, e.g. Norway. [JI]
