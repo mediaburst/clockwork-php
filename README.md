@@ -156,6 +156,11 @@ This class has a few additional features that some users may find useful, if the
 	* remove		 - Remove the invalid characters then send
 	* replace		 - Replace some common invalid characters such as replacing curved quotes with straight quotes
 
+*   $ssl [boolean, default: true]
+  
+    Use SSL when making an HTTP request to the Clockwork API
+
+
 ### Setting Options
 
 #### Global Options
