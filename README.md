@@ -190,6 +190,31 @@ In this example, one message will be from Clockwork and the other from 84433:
     );
     $results = $clockwork->send( $messages );
 
+### SSL Errors
+
+Due to the huge variety of PHP setups out there a small proportion of users may get PHP errors when making API calls due to their SSL configuration.
+
+The errors will generally look something like this:
+
+    Fatal error: 
+    Uncaught exception 'Exception' with message 'HTTP Error calling Clockwork API
+    HTTP Status: 0
+    cURL Erorr: SSL certificate problem, verify that the CA cert is OK. 
+    Details: error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed'
+
+If you're seeing this error there are two fixes available, the first is easy, simply disable SSL on Clockwork calls. Alternatively you can setup your PHP install with the correct root certificates.
+
+#### Disable SSL on Clockwork calls
+
+    $options = array( 'ssl' => false );
+    $clockwork = new Clockwork( $API_KEY, $options );
+
+#### Setup SSL root certificates on your server
+
+This is much more complicated as it depends on your setup, however there are many guides available online. 
+Try a search term like "windows php curl root certificates" or "ubuntu update root certificates".
+
+
 # License
 
 This project is licensed under the ISC open-source license.
