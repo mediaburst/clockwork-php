@@ -5,34 +5,6 @@ use \PHPUnit_Framework_TestCase;
 
 class ClockworkTest extends PHPUnit_Framework_TestCase {
 
-    public function testSend()
-    {
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
-    }
-
-    public function testCheckCredit()
-    {
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
-    }
-
-    public function testCheckBalance()
-    {
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
-    }
-
-    public function testCheckKey()
-    {
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
-    }
-
     public function msisdProvider()
     {
         return array(
