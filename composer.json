@@ -1,0 +1,12 @@
+{
+    "name": "weemen/clockwork-php",
+    "minimum-stability":"dev",
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Clockwork\\": "src/"
+        }
+    }
+}

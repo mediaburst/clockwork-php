@@ -9,9 +9,8 @@
 * @version     1.3.0
 */
 
-if ( !class_exists('ClockworkException') ) {
-  require_once('class-ClockworkException.php');
-}
+namespace Clockwork;
+use ClockworkException;
 
 /**
 * Main Clockwork API Class
