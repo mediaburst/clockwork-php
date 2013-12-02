@@ -6,7 +6,9 @@
  * @copyright   Mediaburst Ltd 2012
  * @license     ISC
  * @link        http://www.clockworksms.com
- */ 
+ */
+
+namespace Clockwork;
 
 /*
  * ClockworkException

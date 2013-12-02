@@ -17,8 +17,7 @@ Require the Clockwork library:
 	require 'class-Clockwork.php';
 
 ### Sending a message
-
-    $clockwork = new Clockwork( $API_KEY );
+    $clockwork = new \Clockwork\Clockwork( $API_KEY );
     $message = array( 'to' => '441234567891', 'message' => 'This is a test!' );
     $result = $clockwork->send( $message );
 
@@ -26,7 +25,7 @@ Require the Clockwork library:
 
 We recommend you use batch sizes of 500 messages or fewer. By limiting the batch size it prevents any timeouts when sending.
 
-    $clockwork = new Clockwork( $API_KEY );
+    $clockwork = new \Clockwork\Clockwork( $API_KEY );
     $messages = array( 
       array( 'to' => '441234567891', 'message' => 'This is a test!' ),
       array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
@@ -103,7 +102,7 @@ For example, if you send to invalid phone number "abc":
 
 Check your available SMS balance:
 
-    $clockwork = new Clockwork( $API_KEY );
+    $clockwork = new \Clockwork\Clockwork( $API_KEY );
     $clockwork->checkBalance();
     
 This will return:
@@ -121,11 +120,11 @@ The Clockwork wrapper will throw a `ClockworkException` if the entire call faile
 
     try 
     {
-      $clockwork = new Clockwork( 'invalid_key' );
+      $clockwork = new \Clockwork\Clockwork( 'invalid_key' );
       $message = array( 'to' => 'abc', 'message' => 'This is a test!' );
       $result = $clockwork->send( $message );
     }
-    catch( ClockworkException $e )
+    catch( \Clockwork\ClockworkException $e )
     {
       print $e->getMessage();
       // Invalid API Key
@@ -183,7 +182,7 @@ Set option values individually on each message.
 
 In this example, one message will be from Clockwork and the other from 84433:
 
-    $clockwork = new Clockwork( $API_KEY, $options );
+    $clockwork = new \Clockwork\Clockwork( $API_KEY, $options );
     $messages = array( 
       array( 'to' => '441234567891', 'message' => 'This is a test!', 'from' => 'Clockwork' ),
       array( 'to' => '441234567892', 'message' => 'This is a test 2!', 'from' => '84433' )
@@ -207,7 +206,7 @@ If you're seeing this error there are two fixes available, the first is easy, si
 #### Disable SSL on Clockwork calls
 
     $options = array( 'ssl' => false );
-    $clockwork = new Clockwork( $API_KEY, $options );
+    $clockwork = new \Clockwork\Clockwork( $API_KEY, $options );
 
 #### Setup SSL root certificates on your server
 
