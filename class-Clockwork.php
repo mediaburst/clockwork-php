@@ -194,6 +194,14 @@ class Clockwork {
       $content_node->appendChild($req_doc->createTextNode($single['message']));
       $sms_node->appendChild($content_node);
 
+      // If using characters not in the GSM alphabet switch to UCS-2
+      // The nasty regular expression below is the entire GSM character set as Unicode character entities (except basic A-z & numbers)
+      if(preg_match("/[^A-Za-z0-9\x{0040}\x{00A3}\x{0024}\x{00A5}\x{00E8}\x{00E9}\x{00F9}\x{00EC}\x{00F2}\x{00C7}\x{000A}\x{00D8}\x{00F8}\x{000D}\x{00C5}\x{00E5}\x{0394}\x{005F}\x{03A6}\x{0393}\x{039B}\x{03A9}\x{03A0}\x{03A8}\x{03A3}\x{0398}\x{039E}\x{00C6}\x{00E6}\x{00DF}\x{00C9}\x{0020}\x{0021}\x{0022}\x{0023}\x{00A4}\x{0025}\x{0026}\x{0027}\x{0028}\x{0029}\x{002A}\x{002B}\x{002C}\x{002D}\x{002E}\x{002F}\x{003A}\x{003B}\x{003C}\x{003D}\x{003E}\x{003F}\x{00A1}\x{00C4}\x{00D6}\x{00D1}\x{00DC}\x{00A7}\x{00BF}\x{00E4}\x{00F6}\x{00F1}\x{00FC}\x{00E0}\x{20AC}\x{000C}\x{005B}\x{005C}\x{005D}\x{005E}\x{007B}\x{007C}\x{007D}\x{007E}]/u", $single['message'])) {
+        $type_node = $req_doc->createElement('MsgType');
+        $type_node->appendChild($req_doc->createTextNode('UCS2'));
+        $sms_node->appendChild($type_node);
+      }
+
       // From
       if (array_key_exists('from', $single) || isset($this->from)) {
         $from_node = $req_doc->createElement('From');
