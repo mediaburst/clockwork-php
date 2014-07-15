@@ -14,7 +14,9 @@ This wrapper lets you interact with Clockwork without the hassle of having to cr
 
 Require the Clockwork library:
 
-	require 'class-Clockwork.php';
+```php
+require 'class-Clockwork.php';
+```
 
 ### Sending a message
 
@@ -28,13 +30,14 @@ $result = $clockwork->send( $message );
 
 We recommend you use batch sizes of 500 messages or fewer. By limiting the batch size it prevents any timeouts when sending.
 
-    $clockwork = new Clockwork( $API_KEY );
-    $messages = array( 
-      array( 'to' => '441234567891', 'message' => 'This is a test!' ),
-      array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
-    );
-    $results = $clockwork->send( $messages );
-
+```php
+$clockwork = new Clockwork( $API_KEY );
+$messages = array( 
+    array( 'to' => '441234567891', 'message' => 'This is a test!' ),
+    array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
+);
+$results = $clockwork->send( $messages );
+```
 
 ### Handling the response
 
@@ -105,9 +108,11 @@ For example, if you send to invalid phone number "abc":
 
 Check your available SMS balance:
 
-    $clockwork = new Clockwork( $API_KEY );
-    $clockwork->checkBalance();
-    
+```php
+$clockwork = new Clockwork( $API_KEY );
+$clockwork->checkBalance();
+```    
+
 This will return:
 
     Array 
@@ -121,23 +126,27 @@ This will return:
 
 The Clockwork wrapper will throw a `ClockworkException` if the entire call failed.
 
-    try 
-    {
-      $clockwork = new Clockwork( 'invalid_key' );
-      $message = array( 'to' => 'abc', 'message' => 'This is a test!' );
-      $result = $clockwork->send( $message );
-    }
-    catch( ClockworkException $e )
-    {
-      print $e->getMessage();
-      // Invalid API Key
-    }
+```php
+try 
+{
+    $clockwork = new Clockwork( 'invalid_key' );
+    $message = array( 'to' => 'abc', 'message' => 'This is a test!' );
+    $result = $clockwork->send( $message );
+}
+catch( ClockworkException $e )
+{
+    print $e->getMessage();
+    // Invalid API Key
+}
+```    
 
 ### Advanced Usage
 
 This class has a few additional features that some users may find useful, if these are not set your account defaults will be used.
 
 ### Optional Parameters
+
+See the [Clockwork Documentation](http://www.clockworksms.com/doc/clever-stuff/xml-interface/send-sms/) for full details on these options.
 
 *   $from [string]
 
@@ -171,13 +180,15 @@ Options set on the API object will apply to all SMS messages unless specifically
 
 In this example both messages will be sent from Clockwork:
 
-    $options = array( 'from' => 'Clockwork' );
-    $clockwork = new Clockwork( $API_KEY, $options );
-    $messages = array( 
-      array( 'to' => '441234567891', 'message' => 'This is a test!' ),
-      array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
-    );
-    $results = $clockwork->send( $messages );
+```php
+$options = array( 'from' => 'Clockwork' );
+$clockwork = new Clockwork( $API_KEY, $options );
+$messages = array( 
+    array( 'to' => '441234567891', 'message' => 'This is a test!' ),
+    array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
+);
+$results = $clockwork->send( $messages );
+```
 
 #### Per-message Options
 
@@ -185,12 +196,14 @@ Set option values individually on each message.
 
 In this example, one message will be from Clockwork and the other from 84433:
 
-    $clockwork = new Clockwork( $API_KEY, $options );
-    $messages = array( 
-      array( 'to' => '441234567891', 'message' => 'This is a test!', 'from' => 'Clockwork' ),
-      array( 'to' => '441234567892', 'message' => 'This is a test 2!', 'from' => '84433' )
-    );
-    $results = $clockwork->send( $messages );
+```php
+$clockwork = new Clockwork( $API_KEY, $options );
+$messages = array( 
+    array( 'to' => '441234567891', 'message' => 'This is a test!', 'from' => 'Clockwork' ),
+    array( 'to' => '441234567892', 'message' => 'This is a test 2!', 'from' => '84433' )
+);
+$results = $clockwork->send( $messages );
+```
 
 ### SSL Errors
 
@@ -198,18 +211,22 @@ Due to the huge variety of PHP setups out there a small proportion of users may 
 
 The errors will generally look something like this:
 
-    Fatal error: 
-    Uncaught exception 'Exception' with message 'HTTP Error calling Clockwork API
-    HTTP Status: 0
-    cURL Erorr: SSL certificate problem, verify that the CA cert is OK. 
-    Details: error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed'
+```
+Fatal error: 
+Uncaught exception 'Exception' with message 'HTTP Error calling Clockwork API
+HTTP Status: 0
+cURL Erorr: SSL certificate problem, verify that the CA cert is OK. 
+Details: error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed'
+```
 
 If you're seeing this error there are two fixes available, the first is easy, simply disable SSL on Clockwork calls. Alternatively you can setup your PHP install with the correct root certificates.
 
 #### Disable SSL on Clockwork calls
 
-    $options = array( 'ssl' => false );
-    $clockwork = new Clockwork( $API_KEY, $options );
+```php
+$options = array( 'ssl' => false );
+$clockwork = new Clockwork( $API_KEY, $options );
+```
 
 #### Setup SSL root certificates on your server
 
