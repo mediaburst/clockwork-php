@@ -18,9 +18,11 @@ Require the Clockwork library:
 
 ### Sending a message
 
-    $clockwork = new Clockwork( $API_KEY );
-    $message = array( 'to' => '441234567891', 'message' => 'This is a test!' );
-    $result = $clockwork->send( $message );
+```php
+$clockwork = new Clockwork( $API_KEY );
+$message = array( 'to' => '441234567891', 'message' => 'This is a test!' );
+$result = $clockwork->send( $message );
+```
 
 ### Sending multiple messages
 
