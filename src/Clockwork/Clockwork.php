@@ -172,7 +172,7 @@ class Clockwork {
       $sms = array($sms);
     }
 
-    $req_doc = new DOMDocument('1.0', 'UTF-8');
+    $req_doc = new \DOMDocument('1.0', 'UTF-8');
     $root = $req_doc->createElement('Message');
     $req_doc->appendChild($root);
 
@@ -250,7 +250,7 @@ class Clockwork {
     $req_xml = $req_doc->saveXML();
      
     $resp_xml = $this->postToClockwork(self::API_SMS_METHOD, $req_xml);
-    $resp_doc = new DOMDocument();
+    $resp_doc = new \DOMDocument();
     $resp_doc->loadXML($resp_xml);   
 
     $response = array();
@@ -316,7 +316,7 @@ class Clockwork {
   */
   public function checkCredit() {
     // Create XML doc for request
-    $req_doc = new DOMDocument('1.0', 'UTF-8');
+    $req_doc = new \DOMDocument('1.0', 'UTF-8');
     $root = $req_doc->createElement('Credit');
     $req_doc->appendChild($root);
     $root->appendChild($req_doc->createElement('Key', $this->key));
@@ -326,7 +326,7 @@ class Clockwork {
     $resp_xml = $this->postToClockwork(self::API_CREDIT_METHOD, $req_xml);
 
     // Create XML doc for response
-    $resp_doc = new DOMDocument();
+    $resp_doc = new \DOMDocument();
     $resp_doc->loadXML($resp_xml);
 
     // Parse the response to find credit value
@@ -364,7 +364,7 @@ class Clockwork {
   */
   public function checkBalance() {
     // Create XML doc for request
-    $req_doc = new DOMDocument('1.0', 'UTF-8');
+    $req_doc = new \DOMDocument('1.0', 'UTF-8');
     $root = $req_doc->createElement('Balance');
     $req_doc->appendChild($root);
     $root->appendChild($req_doc->createElement('Key', $this->key));
@@ -374,7 +374,7 @@ class Clockwork {
     $resp_xml = $this->postToClockwork(self::API_BALANCE_METHOD, $req_xml);
 
     // Create XML doc for response
-    $resp_doc = new DOMDocument();
+    $resp_doc = new \DOMDocument();
     $resp_doc->loadXML($resp_xml);
     
     // Parse the response to find balance value
@@ -425,7 +425,7 @@ class Clockwork {
   */
   public function checkKey() {
     // Create XML doc for request
-    $req_doc = new DOMDocument('1.0', 'UTF-8');
+    $req_doc = new \DOMDocument('1.0', 'UTF-8');
     $root = $req_doc->createElement('Authenticate');
     $req_doc->appendChild($root);
     $root->appendChild($req_doc->createElement('Key', $this->key));
@@ -435,7 +435,7 @@ class Clockwork {
     $resp_xml = $this->postToClockwork(self::API_AUTH_METHOD, $req_xml);
 
     // Create XML doc for response
-    $resp_doc = new DOMDocument();
+    $resp_doc = new \DOMDocument();
     $resp_doc->loadXML($resp_xml);
         
     // Parse the response to see if authenticated
@@ -524,9 +524,9 @@ class Clockwork {
       $info = curl_getinfo($ch);
 
       if ($response === false || $info['http_code'] != 200) {
-        throw new Exception('HTTP Error calling Clockwork API - HTTP Status: ' . $info['http_code'] . ' - cURL Erorr: ' . curl_error($ch));
+        throw new \Exception('HTTP Error calling Clockwork API - HTTP Status: ' . $info['http_code'] . ' - cURL Erorr: ' . curl_error($ch));
       } elseif (curl_errno($ch) > 0) {
-        throw new Exception('HTTP Error calling Clockwork API - cURL Error: ' . curl_error($ch));
+        throw new \Exception('HTTP Error calling Clockwork API - cURL Error: ' . curl_error($ch));
       }
 
       curl_close($ch);
@@ -552,17 +552,17 @@ class Clockwork {
       $fp = @fopen($url, 'rb', false, $ctx);
       if (!$fp) {
         ini_set('track_errors',$track);
-        throw new Exception("HTTP Error calling Clockwork API - fopen Error: $php_errormsg");
+        throw new \Exception("HTTP Error calling Clockwork API - fopen Error: $php_errormsg");
       }
       $response = @stream_get_contents($fp);
       if ($response === false) {
         ini_set('track_errors',$track);
-        throw new Exception("HTTP Error calling Clockwork API - stream Error: $php_errormsg");
+        throw new \Exception("HTTP Error calling Clockwork API - stream Error: $php_errormsg");
       }
       ini_set('track_errors',$track);
       return $response;
     } else {
-      throw new Exception("Clockwork requires PHP5 with cURL or HTTP stream support");
+      throw new \Exception("Clockwork requires PHP5 with cURL or HTTP stream support");
     }
   }
 
