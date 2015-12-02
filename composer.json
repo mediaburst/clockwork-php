@@ -1,0 +1,6 @@
+{
+    "name": "pmill/clockwork-php",
+    "autoload": {
+        "classmap": ["/"]
+    }
+}
