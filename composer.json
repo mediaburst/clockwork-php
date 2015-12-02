@@ -1,5 +1,5 @@
 {
-    "name": "pmill/clockwork-php",
+    "name": "mediaburst/clockwork-php",
     "autoload": {
         "classmap": ["/"]
     }
