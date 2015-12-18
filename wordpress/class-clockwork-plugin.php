@@ -35,7 +35,7 @@ abstract class Clockwork_Plugin {
   /**
    * Version of the Clockwork Wordpress wrapper
    */
-  const VERSION = '1.1.0';
+  const VERSION = '1.2.1';
 	/**
 	 * URL to signup for a new Clockwork account
 	 */
@@ -97,6 +97,7 @@ abstract class Clockwork_Plugin {
     add_action( 'admin_notices', array( $this, 'setup_admin_message' ) ); 
     add_action( 'admin_bar_menu', array( $this, 'setup_admin_bar' ), 999 );
     add_action( 'admin_init', array( $this, 'setup_admin_init' ) );
+    add_action( 'admin_enqueue_scripts', array( $this, 'setup_clockwork_js' ) );
     
     $this->plugin_callback = array( $this, 'main' );
   }
@@ -161,7 +162,7 @@ abstract class Clockwork_Plugin {
     // Don't bother showing the "You need to set your Clockwork options" message if it's that form we're viewing
     if( !isset( $this->clockwork ) && ( get_current_screen()->base != 'toplevel_page_clockwork_options' ) ) {
       $this->show_admin_message('You need to set your <a href="' . site_url() . '/wp-admin/admin.php?page=clockwork_options">Clockwork options</a> before you can use ' . $this->plugin_name . '.');
-    }  
+    }
   }
   
   /**
@@ -175,27 +176,29 @@ abstract class Clockwork_Plugin {
 		if ( !is_super_admin() || !is_admin_bar_showing() ) {
 			return;
 		}
-		// Display a low credit notification if there's no credit
-    try {
-      if( !isset( $this->clockwork ) ) {
-        $options = get_option( 'clockwork_options' );
-        
-        $clockwork = new WordPressClockwork( $options['api_key'] );
+
+    $options = get_option( 'clockwork_options' );
+    if( isset( $options['api_key'] ) ) {
+  		// Display a low credit notification if there's no credit
+      try {
+        if( !isset( $this->clockwork ) ) {
+          $clockwork = new WordPressClockwork( $options['api_key'] );
+        }
+    		$balance = $this->clockwork->checkBalance();
+    		if( $balance['balance'] <= 0 && $balance['account_type'] == 'PAYG' ) {
+    			$balance_string = '£0. Top up now!'; 
+    		} else {
+    			$balance_string = $balance['symbol'] . $balance['balance'];
+    		}
+    		// Add a node to the Admin bar
+    	  $wp_admin_bar->add_node( array(
+    	  	'id' => 'clockwork_balance',
+    			'title' => 'Clockwork: ' . $balance_string,
+    			'href' => self::BUY_URL ) 
+    		);
+      } catch( Exception $e ) {
+        // Don't kill the entire admin panel because we can't get the balance
       }
-  		$balance = $this->clockwork->checkBalance();
-  		if( $balance <= 0 ) {
-  			$balance_string = '£0. Top up now!'; 
-  		} else {
-  			$balance_string = $balance['symbol'] . $balance['balance'];
-  		}
-  		// Add a node to the Admin bar
-  	  $wp_admin_bar->add_node( array(
-  	  	'id' => 'clockwork_balance',
-  			'title' => 'Clockwork: ' . $balance_string,
-  			'href' => self::BUY_URL ) 
-  		);
-    } catch( Exception $e ) {
-      // Don't kill the entire admin panel because we can't get the balance
     }
   }
   
@@ -220,10 +223,21 @@ abstract class Clockwork_Plugin {
     if( !$menu_exists ) {    
       add_menu_page( __( 'Clockwork SMS', $this->language_string ), __( 'Clockwork SMS', $this->language_string ), 'manage_options', 'clockwork_options', array( $this, 'clockwork_options' ), plugins_url( 'images/logo_16px_16px.png', dirname( __FILE__ ) ) );
       add_submenu_page( 'clockwork_options', __( 'Clockwork Options', $this->language_string ), __( 'Clockwork Options', $this->language_string ), 'manage_options', 'clockwork_options', array( $this, 'clockwork_options' ) );
+      add_submenu_page( NULL, 'Test', 'Test', 'manage_options', 'clockwork_test_message', array( $this, 'clockwork_test_message' ) );
     }
     
     // Setup options for this plugin
     add_submenu_page( 'clockwork_options', __( $this->plugin_name, $this->language_string ), __( $this->plugin_name, $this->language_string ), 'manage_options', $this->plugin_callback[1], $this->plugin_callback );
+  }
+  
+  /**
+   * Set up javascript for the Clockwork admin functions
+   *
+   * @return void
+   * @author James Inman
+   */
+  public function setup_clockwork_js() {
+		wp_enqueue_script( 'clockwork_options', plugins_url( 'js/clockwork_options.js', dirname( __FILE__ ) ), array( 'jquery' ) );
   }
   
   /**
@@ -238,7 +252,7 @@ abstract class Clockwork_Plugin {
     add_settings_field( 'clockwork_api_key', 'Your API Key', array( $this, 'settings_api_key_input' ), 'clockwork', 'clockwork_api_keys' );   
     
     add_settings_section( 'clockwork_defaults', 'Default Settings', array( $this, 'settings_default_text' ), 'clockwork' );
-    add_settings_field( 'clockwork_from', "'From' Name/Number ", array( $this, 'settings_from_input' ), 'clockwork', 'clockwork_defaults' );    
+    add_settings_field( 'clockwork_from', "'From' Number ", array( $this, 'settings_from_input' ), 'clockwork', 'clockwork_defaults' );    
   }
   
   /**
@@ -268,25 +282,33 @@ abstract class Clockwork_Plugin {
    * @author James Inman
    */
   public function settings_api_key_input() {
-    try {
-      if( !isset( $this->clockwork ) ) {
-        $options = get_option( 'clockwork_options' );
-        $this->clockwork = new WordPressClockwork( $options['api_key'] );
+    $options = get_option( 'clockwork_options' );
+    
+    if( isset( $options['api_key'] ) ) {      
+      try {
+        if( !isset( $this->clockwork ) ) {
+          $this->clockwork = new WordPressClockwork( $options['api_key'] );
+        }
+      
+        echo "<input id='clockwork_api_key' name='clockwork_options[api_key]' size='40' type='text' value='{$this->clockwork->key}' />";
+      
+        // Show balance
+        $balance = $this->clockwork->checkBalance();
+        if( $balance ) {
+  	      echo '<p><strong>Balance:</strong> ' . $balance['symbol'] . $balance['balance'] . '&nbsp;&nbsp;&nbsp;<a href="' . self::BUY_URL . '" class="button">Buy More</a></p>';
+  	    } else { // We can't get the credits for some reason
+  		    echo '<p><a href="' . self::BUY_URL . '" class="button">Buy More Credit</a></p>';
+  	    } 
+      
+      } catch( ClockworkException $e ) {
+        echo "<input id='clockwork_api_key' name='clockwork_options[api_key]' size='40' type='text' value='' />";
+        echo '<p><a href="' . self::SIGNUP_URL . '" class="button">Get An API Key</a></p>';        
       }
-      
-      echo "<input id='clockwork_api_key' name='clockwork_options[api_key]' size='40' type='text' value='{$this->clockwork->key}' />";
-      
-      // Show balance
-      $balance = $this->clockwork->checkBalance();
-      if( $balance ) {
-	      echo '<p><strong>Balance:</strong> ' . $balance['symbol'] . $balance['balance'] . '&nbsp;&nbsp;&nbsp;<a href="' . self::BUY_URL . '" class="button">Buy More</a></p>';
-	    } else { // We can't get the credits for some reason
-		    echo '<p><a href="' . self::BUY_URL . '" class="button">Buy More Credit</a></p>';
-	    } 
-      
-    } catch( ClockworkException $e ) {
+    
+      return;
+    } else {
       echo "<input id='clockwork_api_key' name='clockwork_options[api_key]' size='40' type='text' value='' />";
-      echo '<p><a href="' . self::SIGNUP_URL . '" class="button">Get An API Key</a></p>';        
+      echo '<p><a href="' . self::SIGNUP_URL . '" class="button">Get An API Key</a></p>';            
     }
   }
   
@@ -299,12 +321,12 @@ abstract class Clockwork_Plugin {
   public function settings_from_input() {
     $options = get_option( 'clockwork_options' );
     if( isset( $options['from'] ) ) {
-      echo "<input id='clockwork_from' name='clockwork_options[from]' size='40' type='text' value='{$options['from']}' />";
+      echo "<input id='clockwork_from' name='clockwork_options[from]' size='40' maxlength='14' type='text' value='{$options['from']}' />";
     } else {
-      echo "<input id='clockwork_from' name='clockwork_options[from]' size='40' type='text' value='' />";
+      echo "<input id='clockwork_from' name='clockwork_options[from]' size='40' maxlength='14' type='text' value='' />";
     }
     
-    echo "<p>You can use an alphabetic string, e.g. the name of your store, which must be 11 characters or less. These are not supported by all international networks. You can also enter any normal mobile phone number, which will allow people to reply to your text messages.</p>";
+    echo "<p>Enter the number your messages will be sent from. We recommend your mobile phone number.<br />UK customers can use alphanumeric strings up to 11 characters.</p>";
   }
   
   /**
@@ -314,25 +336,41 @@ abstract class Clockwork_Plugin {
    * @author James Inman
    */
   public function clockwork_options_validate( $val ) {
-    try {
-      $key = trim( $val['api_key'] );
-      if( $key ) {
-        $clockwork = new WordPressClockwork( $key );
-        $clockwork->checkKey();
-        $this->clockwork = $clockwork;
-        add_settings_error( 'clockwork_options', 'clockwork_options', 'Your settings were saved! You can now start using Clockwork SMS.', 'updated' );
-      } else {
-	      $key = '';
-      }
-    } catch( ClockworkException $ex ) {
-      add_settings_error( 'clockwork_options', 'clockwork_options', 'Your API key was incorrect. Please enter it again.', 'error' );
-    }
-    
+    // From santization
     $val['from'] = preg_replace( '/[^A-Za-z0-9]/', '', $val['from'] );
     if( preg_match( '/[0-9]/', $val['from'] ) ) {
       $val['from'] = substr( $val['from'], 0, 14 );
     } else {
       $val['from'] = substr( $val['from'], 0, 11 );
+    }
+    $val['api_key']= trim($val['api_key']);
+    // API key checking
+    try {      
+      $key = $val['api_key'];
+      if( $key ) {
+        
+        $clockwork = new WordPressClockwork( $key );
+        if( $clockwork->checkKey() ) {
+          
+          $this->clockwork = $clockwork;      
+          add_settings_error( 'clockwork_options', 'clockwork_options', 'Your settings were saved! You can now start using Clockwork SMS.', 'updated' );    
+          return $val;
+          
+        } else {
+          add_settings_error( 'clockwork_options', 'clockwork_options', 'Your API key was incorrect. Please enter it again.', 'error' );  
+          return false;        
+        }
+        
+      } else {
+        // Key is blank, but a blank update (they might have added 'from') is okay
+        $key = '';
+        add_settings_error( 'clockwork_options', 'clockwork_options', 'Your settings were saved! You can now start using Clockwork SMS.', 'updated' );
+        return $val;
+      }
+      
+    } catch( ClockworkException $ex ) {
+      add_settings_error( 'clockwork_options', 'clockwork_options', 'Your API key was incorrect. Please enter it again.', 'error' );
+      return false;
     }
     
     return $val;
@@ -346,6 +384,133 @@ abstract class Clockwork_Plugin {
    */
   public function clockwork_options() {
     $this->render_template( 'clockwork-options' );
+  }
+  
+  /**
+   * Send a test SMS message
+   *
+   * @param string $to Mobile number to send to
+   * @return void
+   * @author James Inman
+   */
+  public function clockwork_test_message( $to ) {
+    $log = array();
+    
+    global $wp_version;
+    $log[] = "Using Wordpress " . $wp_version;
+    $log[] = "Clockwork PHP wrapper initalised: using " . Clockwork::VERSION;
+    $log[] = "Plugin wrapper initialised: using " . get_class($this) . ' ' . self::VERSION;
+    $log[] = '';
+    
+    $options = get_option( 'clockwork_options' );
+    
+    // Check API key for sanity
+    if( isset( $options['api_key'] ) && strlen( $options['api_key'] ) == 40 ) {
+      $log[] = "API key is set and appears valid – " . $options['api_key'];
+    } else {
+      $log[] = "API key is not set, or is the incorrect length.";
+      $log[] = "No credit has been used for this test";
+      $this->output_test_message_log( $log );
+      return;
+    }
+    
+    // Check originator for sanity
+    if( isset( $options['from'] ) && strlen( $options['from'] ) <= 14 ) {
+      $log[] = "Originator is set to " . $options['from'] . " and is below 14 characters";
+      
+      // Then remove special characters
+      $from = $options['from'];
+      $replaced_from = preg_replace( '/[^a-zA-Z0-9]/', '', $from );
+      
+      if( $from == $replaced_from ) {
+        $log[] = 'Replaced special characters in originator, no changes';
+      } else {
+        $log[] = 'Removed special characters from originator: ' . $replaced_from;
+      }
+      
+      // Is it alphanumeric?
+      if( preg_match( '/[a-zA-Z]/', $replaced_from ) == 1 ) {
+        // Is it under 11 characters?
+        if( strlen( $replaced_from ) <= 11 ) {
+          $log[] = 'Alphanumeric originator is less than 11 characters – note that some countries reject alpha originators';
+        } else {
+          $log[] = 'You are trying to send with an alphanumeric originator over 11 characters in length';
+          $log[] = "No credit has been used for this test";
+          $this->output_test_message_log( $log );
+          return;
+        }
+      } else {
+        $log[] = 'Originator is set as numeric';
+      }
+      
+    } else {
+      $log[] = "Originator is not set, using your Clockwork account default (probably 84433)";
+    }
+        
+    // Check if API key is valid
+    $log[] = '';
+    
+    $clockwork = new WordPressClockwork( $options['api_key'] );
+    if( $clockwork->checkKey() ) {
+      $log[] = 'API key exists according to clockworksms.com';
+    }
+    
+    // Check what the balance is
+    $balance_resp = $clockwork->checkBalance();
+    
+    if( $balance_resp['balance'] > 0 ) {
+      $log[] = 'Balance is ' . $balance_resp['symbol'] . $balance_resp['balance'];
+    } 
+	elseif($balance_resp['account_type']== 'Invoice'){
+	$log[] = 'You have a credit account.  No need to check the balance.';
+}
+else {
+      $log[] = 'Balance is 0. You need to add more credit to your Clockwork account';      
+      $log[] = "No credit has been used for this test";
+      $this->output_test_message_log( $log );
+      return;
+    }
+        
+    // Can we authenticate?
+    $log[] = '';
+    
+    $message = 'This is a test message from Clockwork';
+    
+    if( !$clockwork->is_valid_msisdn( $_GET['to'] ) ) {
+      $log[] = $_GET['to'] . ' appears an invalid number to send to, this message may not send';
+    }
+    
+    $log[] = 'Attempting test send with API key ' . $options['api_key'] . ' to ' . $_GET['to'];
+
+    try {
+      $message_data = array( array( 'from' => $options['from'], 'to' => $_GET['to'], 'message' => $message ) );
+      $result = $clockwork->send( $message_data );
+      
+      $log[] = '';
+      
+      if( isset( $result[0]['id'] ) && isset( $result[0]['success'] ) && ( $result[0]['success'] == '1' ) ) {
+        $log[] = 'Message successfully sent with ID ' . $result[0]['id'];
+        
+        $log[] = '';
+        $log[] = 'Used 5p of your Clockwork credit for this test';
+        
+        $balance_resp = $clockwork->checkBalance();
+        $log[] = 'Your new balance is ' . $balance_resp['symbol'] . $balance_resp['balance'];
+      } else {
+        $log[] = 'There was an error sending the message: error code ' . $result[0]['error_code'] . ' – ' . $result[0]['error_message'];
+        $log[] = "No credit has been used for this test";
+      }
+    } catch( ClockworkException $e ) {
+      $log[] = "Error: " . $e->getMessage();
+    } catch( Exception $e ) { 
+      $log[] = "Error: " . $e->getMessage();
+    }
+    
+    $this->output_test_message_log( $log );
+  }
+  
+  protected function output_test_message_log( $log ) {
+    $this->render_template( 'clockwork-test-message', array( 'log' => implode( "\r\n", $log ) ) );
   }
   
   /**
