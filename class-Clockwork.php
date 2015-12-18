@@ -3,10 +3,10 @@
 * Clockwork PHP API
 *
 * @package     Clockwork
-* @copyright   Mediaburst Ltd 2012
-* @license     ISC
+* @copyright   Mediaburst Ltd 2015
+* @license     MIT
 * @link        http://www.clockworksms.com
-* @version     1.3.0
+* @version     1.3.2
 */
 
 if ( !class_exists('ClockworkException') ) {
@@ -24,7 +24,7 @@ class Clockwork {
   /*
   * Version of this class
   */
-  const VERSION           = '1.3.1';
+  const VERSION           = '1.3.2';
 
   /**
   * All Clockwork API calls start with BASE_URL
@@ -382,6 +382,7 @@ class Clockwork {
     $balance = null;
     $err_no = null;
     $err_desc = null;
+    $account_type = null;
         
     foreach ($resp_doc->documentElement->childNodes as $doc_child) {
       switch ($doc_child->nodeName) {
@@ -400,6 +401,9 @@ class Clockwork {
           }
         }
         break;
+	case "AccountType":
+         $account_type = $doc_child->nodeValue; 
+        break;
         case "ErrNo":
         $err_no = $doc_child->nodeValue;
         break;
@@ -415,7 +419,7 @@ class Clockwork {
       throw new ClockworkException($err_desc, $err_no);
     }
         
-    return array( 'symbol' => $symbol, 'balance' => $balance, 'code' => $code );
+    return array( 'symbol' => $symbol, 'balance' => $balance, 'code' => $code, 'account_type' => $account_type );
   }
 
   /**
