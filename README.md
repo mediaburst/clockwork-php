@@ -120,8 +120,11 @@ This will return:
         [symbol] => £
         [balance] => 351.91
         [code] => GBP
+        [account_type] => PAYG
     )
     
+Account Type can be either PAYG or Invoice.
+
 ### Handling Errors
 
 The Clockwork wrapper will throw a `ClockworkException` if the entire call failed.
@@ -236,7 +239,7 @@ Try a search term like "windows php curl root certificates" or "ubuntu update ro
 
 # License
 
-This project is licensed under the ISC open-source license.
+This project is licensed under the MIT open-source license.
 
 A copy of this license can be found in license.txt.
 

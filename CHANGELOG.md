@@ -20,3 +20,8 @@
 #### 1.3.1 (November 13th, 2012)
 
 * Updated `is_valid_msisdn()` method to handle 9-digit phone numbers, e.g. Norway. [JI]
+
+#### 1.3.2 (December 18th, 2015)
+
+* Switched license to MIT rather than ISC as people haven't heard of ISC and they're very similar
+* Added account type to balance checks.

@@ -4,7 +4,7 @@
  *
  * @package     Clockwork
  * @copyright   Mediaburst Ltd 2012
- * @license     ISC
+ * @license     MIT
  * @link        http://www.clockworksms.com
  */ 
 
