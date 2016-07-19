@@ -21,7 +21,7 @@ require 'class-Clockwork.php';
 ### Sending a message
 
 ```php
-$clockwork = new Clockwork( $API_KEY );
+$clockwork = new Clockwork( $API_KEY ); //Be careful not to post your API Keys to public repositories.
 $message = array( 'to' => '441234567891', 'message' => 'This is a test!' );
 $result = $clockwork->send( $message );
 ```
@@ -31,7 +31,7 @@ $result = $clockwork->send( $message );
 We recommend you use batch sizes of 500 messages or fewer. By limiting the batch size it prevents any timeouts when sending.
 
 ```php
-$clockwork = new Clockwork( $API_KEY );
+$clockwork = new Clockwork( $API_KEY ); //Be careful not to post your API Keys to public repositories.
 $messages = array( 
     array( 'to' => '441234567891', 'message' => 'This is a test!' ),
     array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
@@ -109,7 +109,7 @@ For example, if you send to invalid phone number "abc":
 Check your available SMS balance:
 
 ```php
-$clockwork = new Clockwork( $API_KEY );
+$clockwork = new Clockwork( $API_KEY ); //Be careful not to post your API Keys to public repositories.
 $clockwork->checkBalance();
 ```    
 
@@ -185,7 +185,7 @@ In this example both messages will be sent from Clockwork:
 
 ```php
 $options = array( 'from' => 'Clockwork' );
-$clockwork = new Clockwork( $API_KEY, $options );
+$clockwork = new Clockwork( $API_KEY, $options ); //Be careful not to post your API Keys to public repositories.
 $messages = array( 
     array( 'to' => '441234567891', 'message' => 'This is a test!' ),
     array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
@@ -200,7 +200,7 @@ Set option values individually on each message.
 In this example, one message will be from Clockwork and the other from 84433:
 
 ```php
-$clockwork = new Clockwork( $API_KEY, $options );
+$clockwork = new Clockwork( $API_KEY, $options ); //Be careful not to post your API Keys to public repositories.
 $messages = array( 
     array( 'to' => '441234567891', 'message' => 'This is a test!', 'from' => 'Clockwork' ),
     array( 'to' => '441234567892', 'message' => 'This is a test 2!', 'from' => '84433' )
@@ -228,7 +228,7 @@ If you're seeing this error there are two fixes available, the first is easy, si
 
 ```php
 $options = array( 'ssl' => false );
-$clockwork = new Clockwork( $API_KEY, $options );
+$clockwork = new Clockwork( $API_KEY, $options );  //Be careful not to post your API Keys to public repositories.
 ```
 
 #### Setup SSL root certificates on your server
@@ -254,3 +254,4 @@ and submit a pull request.
 [1]: mailto:hello@clockworksms.com
 [2]: http://www.clockworksms.com/
 [3]: https://github.com/mediaburst/clockwork-php
+
