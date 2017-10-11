@@ -9,13 +9,11 @@
 * @version     1.3.2
 */
 
-if ( !class_exists('ClockworkException') ) {
-  require_once('class-ClockworkException.php');
-}
+namespace mediaburst\ClockworkSMS;
 
 /**
 * Main Clockwork API Class
-* 
+*
 * @package     Clockwork
 * @since       1.0
 */
@@ -24,7 +22,7 @@ class Clockwork {
   /*
   * Version of this class
   */
-  const VERSION           = '1.3.2';
+  const VERSION           = '2.0.0';
 
   /**
   * All Clockwork API calls start with BASE_URL
@@ -56,9 +54,9 @@ class Clockwork {
   */
   const API_BALANCE_METHOD = 'balance';
 
-  /** 
+  /**
   * Clockwork API Key
-  * 
+  *
   * @var string
   * @author  Martin Steel
   */
@@ -128,7 +126,7 @@ class Clockwork {
   * Possible values:
   *      'error'     - Return an error (Messasge is not sent)
   *      'remove'    - Remove the invalid character(s)
-  *      'replace'   - Replace invalid characters where possible, remove others 
+  *      'replace'   - Replace invalid characters where possible, remove others
   * @author  Martin Steel
   */
   public $invalid_char_action;
@@ -146,7 +144,7 @@ class Clockwork {
     } else {
       $this->key = $key;
     }
-        
+
     $this->ssl                  = (array_key_exists('ssl', $options)) ? $options['ssl'] : null;
     $this->proxy_host           = (array_key_exists('proxy_host', $options)) ? $options['proxy_host'] : null;
     $this->proxy_port           = (array_key_exists('proxy_port', $options)) ? $options['proxy_port'] : null;
@@ -159,7 +157,7 @@ class Clockwork {
 
   /**
   * Send some text messages
-  * 
+  *
   *
   * @author  Martin Steel
   */
@@ -173,7 +171,7 @@ class Clockwork {
       $sms = array($sms);
     }
 
-    $req_doc = new DOMDocument('1.0', 'UTF-8');
+    $req_doc = new \DOMDocument('1.0', 'UTF-8');
     $root = $req_doc->createElement('Message');
     $req_doc->appendChild($root);
 
@@ -185,10 +183,10 @@ class Clockwork {
       $single = $sms[$i];
 
       $sms_node = $req_doc->createElement('SMS');
-           
+
       // Phone number
-      $sms_node->appendChild($req_doc->createElement('To', $single['to'])); 
-            
+      $sms_node->appendChild($req_doc->createElement('To', $single['to']));
+
       // Message text
       $content_node = $req_doc->createElement('Content');
       $content_node->appendChild($req_doc->createTextNode($single['message']));
@@ -249,10 +247,10 @@ class Clockwork {
     }
 
     $req_xml = $req_doc->saveXML();
-     
+
     $resp_xml = $this->postToClockwork(self::API_SMS_METHOD, $req_xml);
-    $resp_doc = new DOMDocument();
-    $resp_doc->loadXML($resp_xml);   
+    $resp_doc = new \DOMDocument();
+    $resp_doc->loadXML($resp_xml);
 
     $response = array();
     $err_no = null;
@@ -279,7 +277,7 @@ class Clockwork {
             break;
           }
         }
-        if( array_key_exists('error_code', $resp ) ) 
+        if( array_key_exists('error_code', $resp ) )
         {
           $resp['success'] = 0;
         } else {
@@ -300,7 +298,7 @@ class Clockwork {
     if (isset($err_no)) {
       throw new ClockworkException($err_desc, $err_no);
     }
-        
+
     if ($single_message) {
       return $response[0];
     } else {
@@ -317,7 +315,7 @@ class Clockwork {
   */
   public function checkCredit() {
     // Create XML doc for request
-    $req_doc = new DOMDocument('1.0', 'UTF-8');
+    $req_doc = new \DOMDocument('1.0', 'UTF-8');
     $root = $req_doc->createElement('Credit');
     $req_doc->appendChild($root);
     $root->appendChild($req_doc->createElement('Key', $this->key));
@@ -327,14 +325,14 @@ class Clockwork {
     $resp_xml = $this->postToClockwork(self::API_CREDIT_METHOD, $req_xml);
 
     // Create XML doc for response
-    $resp_doc = new DOMDocument();
+    $resp_doc = new \DOMDocument();
     $resp_doc->loadXML($resp_xml);
 
     // Parse the response to find credit value
     $credit;
     $err_no = null;
     $err_desc = null;
-        
+
     foreach ($resp_doc->documentElement->childNodes AS $doc_child) {
       switch ($doc_child->nodeName) {
         case "Credit":
@@ -360,30 +358,30 @@ class Clockwork {
   /**
   * Check your account balance
   *
-  * @return  array   Array of account balance: 
+  * @return  array   Array of account balance:
   * @author  Martin Steel
   */
   public function checkBalance() {
     // Create XML doc for request
-    $req_doc = new DOMDocument('1.0', 'UTF-8');
+    $req_doc = new \DOMDocument('1.0', 'UTF-8');
     $root = $req_doc->createElement('Balance');
     $req_doc->appendChild($root);
     $root->appendChild($req_doc->createElement('Key', $this->key));
     $req_xml = $req_doc->saveXML();
-    
+
     // POST XML to Clockwork
     $resp_xml = $this->postToClockwork(self::API_BALANCE_METHOD, $req_xml);
 
     // Create XML doc for response
-    $resp_doc = new DOMDocument();
+    $resp_doc = new \DOMDocument();
     $resp_doc->loadXML($resp_xml);
-    
+
     // Parse the response to find balance value
     $balance = null;
     $err_no = null;
     $err_desc = null;
     $account_type = null;
-        
+
     foreach ($resp_doc->documentElement->childNodes as $doc_child) {
       switch ($doc_child->nodeName) {
         case "Balance":
@@ -393,16 +391,16 @@ class Clockwork {
         foreach ($doc_child->childNodes as $resp_node) {
           switch ($resp_node->tagName) {
             case "Symbol":
-            $symbol = $resp_node->nodeValue; 
+            $symbol = $resp_node->nodeValue;
             break;
             case "Code":
-            $code = $resp_node->nodeValue; 
+            $code = $resp_node->nodeValue;
             break;
           }
         }
         break;
-	case "AccountType":
-         $account_type = $doc_child->nodeValue; 
+    case "AccountType":
+         $account_type = $doc_child->nodeValue;
         break;
         case "ErrNo":
         $err_no = $doc_child->nodeValue;
@@ -418,7 +416,7 @@ class Clockwork {
     if (isset($err_no)) {
       throw new ClockworkException($err_desc, $err_no);
     }
-        
+
     return array( 'symbol' => $symbol, 'balance' => $balance, 'code' => $code, 'account_type' => $account_type );
   }
 
@@ -430,7 +428,7 @@ class Clockwork {
   */
   public function checkKey() {
     // Create XML doc for request
-    $req_doc = new DOMDocument('1.0', 'UTF-8');
+    $req_doc = new \DOMDocument('1.0', 'UTF-8');
     $root = $req_doc->createElement('Authenticate');
     $req_doc->appendChild($root);
     $root->appendChild($req_doc->createElement('Key', $this->key));
@@ -440,9 +438,9 @@ class Clockwork {
     $resp_xml = $this->postToClockwork(self::API_AUTH_METHOD, $req_xml);
 
     // Create XML doc for response
-    $resp_doc = new DOMDocument();
+    $resp_doc = new \DOMDocument();
     $resp_doc->loadXML($resp_xml);
-        
+
     // Parse the response to see if authenticated
     $cust_id;
     $err_no = null;
@@ -467,7 +465,7 @@ class Clockwork {
     if (isset($err_no)) {
       throw new ClockworkException($err_desc, $err_no);
     }
-    return isset($cust_id);   
+    return isset($cust_id);
   }
 
   /**
@@ -483,7 +481,7 @@ class Clockwork {
     if ($this->log) {
       $this->logXML("API $method Request XML", $data);
     }
-    
+
     if( isset( $this->ssl ) ) {
       $ssl = $this->ssl;
     } else {
@@ -520,6 +518,7 @@ class Clockwork {
       curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Content-Type: text/xml"));
       curl_setopt($ch, CURLOPT_USERAGENT, 'Clockwork PHP Wrapper/1.0' . self::VERSION);
       curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+      curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4 );
       if (isset($this->proxy_host) && isset($this->proxy_port)) {
         curl_setopt($ch, CURLOPT_PROXY, $this->proxy_host);
         curl_setopt($ch, CURLOPT_PROXYPORT, $this->proxy_port);
@@ -529,9 +528,9 @@ class Clockwork {
       $info = curl_getinfo($ch);
 
       if ($response === false || $info['http_code'] != 200) {
-        throw new Exception('HTTP Error calling Clockwork API - HTTP Status: ' . $info['http_code'] . ' - cURL Erorr: ' . curl_error($ch));
+        throw new \Exception('HTTP Error calling Clockwork API - HTTP Status: ' . $info['http_code'] . ' - cURL Erorr: ' . curl_error($ch));
       } elseif (curl_errno($ch) > 0) {
-        throw new Exception('HTTP Error calling Clockwork API - cURL Error: ' . curl_error($ch));
+        throw new \Exception('HTTP Error calling Clockwork API - cURL Error: ' . curl_error($ch));
       }
 
       curl_close($ch);
@@ -557,17 +556,17 @@ class Clockwork {
       $fp = @fopen($url, 'rb', false, $ctx);
       if (!$fp) {
         ini_set('track_errors',$track);
-        throw new Exception("HTTP Error calling Clockwork API - fopen Error: $php_errormsg");
+        throw new \Exception("HTTP Error calling Clockwork API - fopen Error: $php_errormsg");
       }
       $response = @stream_get_contents($fp);
       if ($response === false) {
         ini_set('track_errors',$track);
-        throw new Exception("HTTP Error calling Clockwork API - stream Error: $php_errormsg");
+        throw new \Exception("HTTP Error calling Clockwork API - stream Error: $php_errormsg");
       }
       ini_set('track_errors',$track);
       return $response;
     } else {
-      throw new Exception("Clockwork requires PHP5 with cURL or HTTP stream support");
+      throw new \Exception("Clockwork requires PHP5 with cURL or HTTP stream support");
     }
   }
 
@@ -605,7 +604,7 @@ class Clockwork {
   protected function logXML($log_msg, $xml) {
     // Tidy if possible
     if (class_exists('tidy')) {
-      $tidy = new tidy;
+      $tidy = new \tidy;
       $config = array(
       'indent'     => true,
       'input-xml'  => true,
@@ -630,7 +629,7 @@ class Clockwork {
   protected function is_assoc($array) {
     return (bool)count(array_filter(array_keys($array), 'is_string'));
   }
-  
+
   /**
    * Check if a number is a valid MSISDN
    *

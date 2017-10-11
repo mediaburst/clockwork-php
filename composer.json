@@ -1,0 +1,19 @@
+{
+    "name": "mediaburst/clockworksms",
+    "description": "ClockworkSMS, International SMS API",
+    "license": "MIT",
+    "keywords": ["sms"],
+    "authors": [
+        {
+            "name": "Andrew Wise",
+            "email": "andy@mediaburst.co.uk"
+        }
+    ],
+    "require": {},
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "mediaburst\\ClockworkSMS\\": "src"
+        }
+    }
+}
