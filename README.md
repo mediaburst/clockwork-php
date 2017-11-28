@@ -12,16 +12,30 @@ This wrapper lets you interact with Clockwork without the hassle of having to cr
 
 ## Usage
 
-Require the Clockwork library:
+### Installing with composer
+The easiest way to get Clockwork is to use [Composer][4] to automatically download and include it in your project. Setup [Composer][4] and add us to your composer.json 
+```php
+{
+    "require": {
+        "mediaburst/clockworksms": "2.0.*"
+    }
+}
+```
+If you are using your own autoloader we are using the PSR-4 namespacing scheme.
+
+### Including directly
+
+Download the Clockwork library, put it in your project and require the Clockwork class and the ClockworkException classes:
 
 ```php
-require 'class-Clockwork.php';
+require 'src/Clockwork.php';
+require 'src/ClockworkException.php';
 ```
 
 ### Sending a message
 
 ```php
-$clockwork = new Clockwork( $API_KEY ); //Be careful not to post your API Keys to public repositories.
+$clockwork = new mediaburst\ClockworkSMS\Clockwork( $API_KEY ); //Be careful not to post your API Keys to public repositories.
 $message = array( 'to' => '441234567891', 'message' => 'This is a test!' );
 $result = $clockwork->send( $message );
 ```
@@ -31,7 +45,7 @@ $result = $clockwork->send( $message );
 We recommend you use batch sizes of 500 messages or fewer. By limiting the batch size it prevents any timeouts when sending.
 
 ```php
-$clockwork = new Clockwork( $API_KEY ); //Be careful not to post your API Keys to public repositories.
+$clockwork = new mediaburst\ClockworkSMS\Clockwork( $API_KEY ); //Be careful not to post your API Keys to public repositories.
 $messages = array( 
     array( 'to' => '441234567891', 'message' => 'This is a test!' ),
     array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
@@ -109,7 +123,7 @@ For example, if you send to invalid phone number "abc":
 Check your available SMS balance:
 
 ```php
-$clockwork = new Clockwork( $API_KEY ); //Be careful not to post your API Keys to public repositories.
+$clockwork = new mediaburst\ClockworkSMS\Clockwork( $API_KEY ); //Be careful not to post your API Keys to public repositories.
 $clockwork->checkBalance();
 ```    
 
@@ -132,11 +146,11 @@ The Clockwork wrapper will throw a `ClockworkException` if the entire call faile
 ```php
 try 
 {
-    $clockwork = new Clockwork( 'invalid_key' );
+    $clockwork = new mediaburst\ClockworkSMS\Clockwork( 'invalid_key' );
     $message = array( 'to' => 'abc', 'message' => 'This is a test!' );
     $result = $clockwork->send( $message );
 }
-catch( ClockworkException $e )
+catch( mediaburst\ClockworkSMS\ClockworkException $e )
 {
     print $e->getMessage();
     // Invalid API Key
@@ -185,7 +199,7 @@ In this example both messages will be sent from Clockwork:
 
 ```php
 $options = array( 'from' => 'Clockwork' );
-$clockwork = new Clockwork( $API_KEY, $options ); //Be careful not to post your API Keys to public repositories.
+$clockwork = new mediaburst\ClockworkSMS\Clockwork( $API_KEY, $options ); //Be careful not to post your API Keys to public repositories.
 $messages = array( 
     array( 'to' => '441234567891', 'message' => 'This is a test!' ),
     array( 'to' => '441234567892', 'message' => 'This is a test 2!' )
@@ -200,7 +214,7 @@ Set option values individually on each message.
 In this example, one message will be from Clockwork and the other from 84433:
 
 ```php
-$clockwork = new Clockwork( $API_KEY, $options ); //Be careful not to post your API Keys to public repositories.
+$clockwork = new mediaburst\ClockworkSMS\Clockwork( $API_KEY, $options ); //Be careful not to post your API Keys to public repositories.
 $messages = array( 
     array( 'to' => '441234567891', 'message' => 'This is a test!', 'from' => 'Clockwork' ),
     array( 'to' => '441234567892', 'message' => 'This is a test 2!', 'from' => '84433' )
@@ -228,7 +242,7 @@ If you're seeing this error there are two fixes available, the first is easy, si
 
 ```php
 $options = array( 'ssl' => false );
-$clockwork = new Clockwork( $API_KEY, $options );  //Be careful not to post your API Keys to public repositories.
+$clockwork = new mediaburst\ClockworkSMS\Clockwork( $API_KEY, $options );  //Be careful not to post your API Keys to public repositories.
 ```
 
 #### Setup SSL root certificates on your server
@@ -254,4 +268,4 @@ and submit a pull request.
 [1]: mailto:hello@clockworksms.com
 [2]: http://www.clockworksms.com/
 [3]: https://github.com/mediaburst/clockwork-php
-
+[4]: https://getcomposer.org/
