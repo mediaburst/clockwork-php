@@ -6,7 +6,7 @@
  * @copyright   Mediaburst Ltd 2012
  * @license     MIT
  * @link        http://www.clockworksms.com
- */ 
+ */
 
 /*
  * ClockworkException
@@ -18,7 +18,10 @@
  * @subpackage  Exception
  * @since       1.0
  */
-class ClockworkException extends Exception {
+
+namespace mediaburst\ClockworkSMS;
+
+class ClockworkException extends \Exception {
 
     public function __construct( $message, $code = 0 ) {
         // make sure everything is assigned properly
